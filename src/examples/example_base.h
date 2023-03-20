@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 
 #include "impeller/renderer/command_buffer.h"
 #include "impeller/renderer/context.h"
@@ -17,8 +18,8 @@ class ExampleBase {
   virtual ~ExampleBase();
 
   virtual Info GetInfo() = 0;
-  virtual bool Setup(impeller::Context& context) = 0;
-  virtual bool Render(impeller::Context& context,
+  virtual bool Setup(std::shared_ptr<impeller::Context> context) = 0;
+  virtual bool Render(std::shared_ptr<impeller::Context> context,
                       const impeller::RenderTarget& render_target,
                       impeller::CommandBuffer& command_buffer) = 0;
 };

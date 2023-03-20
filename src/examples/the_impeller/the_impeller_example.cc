@@ -25,7 +25,7 @@ ExampleBase::Info TheImpellerExample::GetInfo() {
   };
 }
 
-bool TheImpellerExample::Setup(impeller::Context& context) {
+bool TheImpellerExample::Setup(std::shared_ptr<impeller::Context> context) {
   const auto fixture_path =
       std::filesystem::current_path() /
       "third_party/impeller-cmake/third_party/flutter/impeller/fixtures/";
@@ -34,7 +34,7 @@ bool TheImpellerExample::Setup(impeller::Context& context) {
       (fixture_path / "blue_noise.png").generic_string();
 
   blue_noise_texture_ = example::LoadTexture(blue_noise_path.c_str(),
-                                             *context.GetResourceAllocator());
+                                             *context->GetResourceAllocator());
   if (!blue_noise_texture_) {
     std::cerr << "Failed to load blue noise texture." << std::endl;
     return false;
@@ -44,7 +44,7 @@ bool TheImpellerExample::Setup(impeller::Context& context) {
   noise_sampler_desc.height_address_mode =
       impeller::SamplerAddressMode::kRepeat;
   blue_noise_sampler_ =
-      context.GetSamplerLibrary()->GetSampler(noise_sampler_desc);
+      context->GetSamplerLibrary()->GetSampler(noise_sampler_desc);
 
   cube_map_texture_ =
       example::LoadTextureCube({fixture_path / "table_mountain_px.png",
@@ -53,13 +53,13 @@ bool TheImpellerExample::Setup(impeller::Context& context) {
                                 fixture_path / "table_mountain_ny.png",
                                 fixture_path / "table_mountain_pz.png",
                                 fixture_path / "table_mountain_nz.png"},
-                               *context.GetResourceAllocator());
-  cube_map_sampler_ = context.GetSamplerLibrary()->GetSampler({});
+                               *context->GetResourceAllocator());
+  cube_map_sampler_ = context->GetSamplerLibrary()->GetSampler({});
 
   auto pipeline_desc =
-      impeller::PipelineBuilder<VS, FS>::MakeDefaultPipelineDescriptor(context);
+      impeller::PipelineBuilder<VS, FS>::MakeDefaultPipelineDescriptor(*context);
   pipeline_desc->SetSampleCount(impeller::SampleCount::kCount4);
-  pipeline_ = context.GetPipelineLibrary()->GetPipeline(pipeline_desc).Get();
+  pipeline_ = context->GetPipelineLibrary()->GetPipeline(pipeline_desc).Get();
   if (!pipeline_ || !pipeline_->IsValid()) {
     std::cerr << "Failed to initialize pipeline for showcase.";
     return false;
@@ -68,7 +68,7 @@ bool TheImpellerExample::Setup(impeller::Context& context) {
   return true;
 }
 
-bool TheImpellerExample::Render(impeller::Context& context,
+bool TheImpellerExample::Render(std::shared_ptr<impeller::Context> context,
                                 const impeller::RenderTarget& render_target,
                                 impeller::CommandBuffer& command_buffer) {
   clock_.Tick();

@@ -27,10 +27,15 @@
 #include "examples/example_base.h"
 #include "examples/mesh/mesh_example.h"
 #include "examples/the_impeller/the_impeller_example.h"
+#include "examples/aiks/aiks_example.h"
 
 #include "generated/shaders/gles/example_shaders_gles.h"
 #include "generated/shaders/impeller.frag.h"
 #include "generated/shaders/impeller.vert.h"
+
+#include "generated/impeller/entity/gles/entity_shaders_gles.h"
+#include "generated/impeller/entity/gles/framebuffer_blend_shaders_gles.h"
+#include "generated/impeller/entity/gles/modern_shaders_gles.h"
 
 class ReactorWorker final : public impeller::ReactorGLES::Worker {
  public:
@@ -119,7 +124,17 @@ int main() {
                           impeller_imgui_shaders_gles_length),
                       std::make_shared<fml::NonOwnedMapping>(
                           impeller_example_shaders_gles_data,
-                          impeller_example_shaders_gles_length)});
+                          impeller_example_shaders_gles_length),
+                      std::make_shared<fml::NonOwnedMapping>(
+                          impeller_entity_shaders_gles_data,
+                          impeller_entity_shaders_gles_length),
+                      std::make_shared<fml::NonOwnedMapping>(
+                          impeller_framebuffer_blend_shaders_gles_data,
+                          impeller_framebuffer_blend_shaders_gles_length),
+                      std::make_shared<fml::NonOwnedMapping>(
+                          impeller_modern_shaders_gles_data,
+                          impeller_modern_shaders_gles_length)
+                      });
   if (!context) {
     std::cerr << "Failed to create Impeller context.";
     return EXIT_FAILURE;
@@ -156,6 +171,7 @@ int main() {
   std::vector<std::unique_ptr<example::ExampleBase>> examples;
   examples.push_back(std::make_unique<example::TheImpellerExample>());
   examples.push_back(std::make_unique<example::MeshExample>());
+  examples.push_back(std::make_unique<example::AiksExample>());
 
   std::vector<const char*> example_names;
 
@@ -163,7 +179,7 @@ int main() {
     auto info = example->GetInfo();
     example_names.push_back(info.name);
 
-    if (!example->Setup(*renderer->GetContext())) {
+    if (!example->Setup(renderer->GetContext())) {
       return EXIT_FAILURE;
     }
   }
@@ -251,7 +267,7 @@ int main() {
       }
 
       // Render the selected example.
-      if (!example->Render(*renderer->GetContext(), render_target, *buffer)) {
+      if (!example->Render(renderer->GetContext(), render_target, *buffer)) {
         return false;
       }
 

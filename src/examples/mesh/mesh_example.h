@@ -22,8 +22,8 @@ class MeshExample final : public ExampleBase {
   using FS = impeller::MeshExampleFragmentShader;
 
   Info GetInfo() override;
-  bool Setup(impeller::Context& context) override;
-  bool Render(impeller::Context& context,
+  bool Setup(std::shared_ptr<impeller::Context> context) override;
+  bool Render(std::shared_ptr<impeller::Context> context,
               const impeller::RenderTarget& render_target,
               impeller::CommandBuffer& command_buffer) override;
 
