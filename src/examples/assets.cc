@@ -4,9 +4,9 @@
 #include <iostream>
 #include <memory>
 
-#include "impeller/renderer/allocator.h"
-#include "impeller/renderer/formats.h"
-#include "impeller/renderer/texture_descriptor.h"
+#include "impeller/core/allocator.h"
+#include "impeller/core/formats.h"
+#include "impeller/core/texture_descriptor.h"
 #include "stb/stb_image.h"
 
 namespace example {
@@ -49,6 +49,7 @@ std::shared_ptr<impeller::Texture> LoadTexture(
   texture_desc.size = {raw_image.width, raw_image.height};
   texture_desc.usage = usage;
   texture_desc.storage_mode = impeller::StorageMode::kHostVisible;
+  texture_desc.mip_count = 1u;
 
   auto texture = allocator.CreateTexture(texture_desc);
   if (!texture) {
@@ -86,6 +87,7 @@ std::shared_ptr<impeller::Texture> LoadTextureCube(
   texture_desc.size = {raw_images[0].width, raw_images[0].height};
   texture_desc.usage = usage;
   texture_desc.storage_mode = impeller::StorageMode::kHostVisible;
+  texture_desc.mip_count = 1u;
 
   auto texture = allocator.CreateTexture(texture_desc);
   if (!texture) {

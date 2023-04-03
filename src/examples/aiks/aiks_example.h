@@ -7,8 +7,8 @@
 
 #include "impeller/renderer/pipeline.h"
 #include "impeller/renderer/pipeline_descriptor.h"
-#include "impeller/renderer/sampler.h"
-#include "impeller/renderer/vertex_buffer.h"
+#include "impeller/core/sampler.h"
+#include "impeller/core/vertex_buffer.h"
 #include "impeller/aiks/aiks_context.h"
 
 namespace example {

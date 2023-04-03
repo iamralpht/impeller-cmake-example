@@ -33,6 +33,9 @@ if(WIN32)
         $<$<CONFIG:Release>:/MT>)
 elseif(UNIX)
     set(CXX_STANDARD_LIBRARY libc++)
+    # Enable SSE2 for half float support
+    set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-msse -msse2 -msse3")
+    set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-msse -msse2 -msse3")
 endif()
 
 # Dependency: impeller-cmake
