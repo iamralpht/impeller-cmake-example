@@ -44,16 +44,53 @@ bool AiksExample::Render(std::shared_ptr<impeller::Context> context,
                          impeller::CommandBuffer& command_buffer)
 {
   clock_.Tick();
-
-  static impeller::Color color = impeller::Color::Black().WithAlpha(0.5);
-  static float scale = 3;
-  static bool add_circle_clip = true;
+  auto time = clock_.GetTime();
 
   impeller::Canvas canvas;
   impeller::Paint paint;
 
   paint.color = impeller::Color::White();
   canvas.DrawPaint(paint);
+
+  canvas.Save();
+  canvas.Translate({400, 400});
+
+  // Limit drawing to face circle with a clip.
+  canvas.ClipPath(impeller::PathBuilder{}.AddCircle(impeller::Point(), 200).TakePath());
+  canvas.Save();
+
+  // Cut away eyes/mouth using difference clips.
+  canvas.ClipPath(impeller::PathBuilder{}.AddCircle({-100, -50}, 30).TakePath(),
+                  impeller::Entity::ClipOperation::kDifference);
+  canvas.ClipPath(impeller::PathBuilder{}.AddCircle({100, -50}, 30).TakePath(),
+                  impeller::Entity::ClipOperation::kDifference);
+  canvas.ClipPath(impeller::PathBuilder{}
+                      .AddQuadraticCurve({-100, 50}, {0, 150}, {100, 50})
+                      .TakePath(),
+                  impeller::Entity::ClipOperation::kDifference);
+
+  // Draw a huge yellow rectangle to prove the clipping works.
+  paint.color = impeller::Color::Yellow();
+  canvas.DrawRect(impeller::Rect::MakeXYWH(-1000, -1000, 2000, 2000), paint);
+
+  // Remove the difference clips and draw hair that partially covers the eyes.
+  canvas.Restore();
+  paint.color = impeller::Color::Maroon();
+  paint.mask_blur_descriptor = { impeller::FilterContents::BlurStyle::kNormal, impeller::Sigma(12.5f * (std::sin(time * 2.0f) + 1.5f)) };
+  canvas.DrawPath(impeller::PathBuilder{}
+                      .MoveTo({200, -200})
+                      .HorizontalLineTo(-200)
+                      .VerticalLineTo(-40)
+                      .CubicCurveTo({0, -40}, {0, -80}, {200, -80})
+                      .TakePath(),
+                  paint);
+  
+  paint.mask_blur_descriptor.reset();
+  canvas.Restore();
+
+  static impeller::Color color = impeller::Color::Black().WithAlpha(0.5);
+  static float scale = 3;
+  static bool add_circle_clip = true;
 
   paint.color = color;
 
@@ -77,69 +114,10 @@ bool AiksExample::Render(std::shared_ptr<impeller::Context> context,
     canvas.Translate({-240, 60});
   }
 
+
   impeller::RenderTarget render_target_copy(render_target);
 
   return aiks_context_->Render(canvas.EndRecordingAsPicture(), render_target_copy);
 }
 
 } // namespace example
-
-/*
-[&](AiksContext& renderer, RenderTarget& render_target)
-
-static Color color = Color::Black().WithAlpha(0.5);
-    static float scale = 3;
-    static bool add_circle_clip = true;
-
-    ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-    ImGui::ColorEdit4("Color", reinterpret_cast<float*>(&color));
-    ImGui::SliderFloat("Scale", &scale, 0, 6);
-    ImGui::Checkbox("Circle clip", &add_circle_clip);
-    ImGui::End();
-
-    Canvas canvas;
-    canvas.Scale(GetContentScale());
-    Paint paint;
-
-    paint.color = Color::White();
-    canvas.DrawPaint(paint);
-
-    paint.color = color;
-    paint.style = Paint::Style::kStroke;
-    paint.stroke_width = 10;
-
-    Path path = PathBuilder{}
-                    .MoveTo({20, 20})
-                    .QuadraticCurveTo({60, 20}, {60, 60})
-                    .Close()
-                    .MoveTo({60, 20})
-                    .QuadraticCurveTo({60, 60}, {20, 60})
-                    .TakePath();
-
-    canvas.Scale(Vector2(scale, scale));
-
-    if (add_circle_clip) {
-      auto [handle_a, handle_b] = IMPELLER_PLAYGROUND_LINE(
-          Point(60, 300), Point(600, 300), 20, Color::Red(), Color::Red());
-
-      auto screen_to_canvas = canvas.GetCurrentTransformation().Invert();
-      Point point_a = screen_to_canvas * handle_a * GetContentScale();
-      Point point_b = screen_to_canvas * handle_b * GetContentScale();
-
-      Point middle = (point_a + point_b) / 2;
-      auto radius = point_a.GetDistance(middle);
-      canvas.ClipPath(PathBuilder{}.AddCircle(middle, radius).TakePath());
-    }
-
-    for (auto join : {Join::kBevel, Join::kRound, Join::kMiter}) {
-      paint.stroke_join = join;
-      for (auto cap : {Cap::kButt, Cap::kSquare, Cap::kRound}) {
-        paint.stroke_cap = cap;
-        canvas.DrawPath(path, paint);
-        canvas.Translate({80, 0});
-      }
-      canvas.Translate({-240, 60});
-    }
-
-return renderer.Render(canvas.EndRecordingAsPicture(), render_target);
-*/
